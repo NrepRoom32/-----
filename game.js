@@ -2,6 +2,94 @@
    CARD FLIP PARTY GAME
    ==================================================== */
 
+// ---------- INJECT STYLE OVERRIDES ----------
+(function injectStyles() {
+  const style = document.createElement('style');
+  style.textContent = `
+    /* ── Floating cards: 2x bigger ── */
+    .float-card {
+      width: 160px !important;
+      height: 224px !important;
+      border-radius: 14px !important;
+    }
+    .card-inner {
+      width: 100% !important;
+      height: 100% !important;
+      border-radius: 14px !important;
+    }
+
+    /* ── Game screen: 001 image fills card fully (no gap) ── */
+    .back-art {
+      width: 100% !important;
+      height: 100% !important;
+      border-radius: 14px !important;
+      overflow: hidden !important;
+      display: flex !important;
+    }
+    .back-art img {
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: cover !important;
+      display: block !important;
+      border-radius: 0 !important;
+    }
+
+    /* ── Splash/main page: 001 image has rounded corners ── */
+    #splash img[src*="001"],
+    #splash .preview-card img,
+    #splash .back-art img,
+    #splash .card-back-img {
+      border-radius: 22px !important;
+      overflow: hidden !important;
+    }
+
+    /* ── Reveal card: rank image ~3/4 of card ── */
+    .card-center {
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: center !important;
+      justify-content: center !important;
+      gap: 6px !important;
+      padding: 4px !important;
+      height: 100% !important;
+    }
+    .card-character {
+      width: 75% !important;
+      height: 60% !important;
+      max-width: 75% !important;
+      max-height: 60% !important;
+      object-fit: contain !important;
+      display: block !important;
+      border-radius: 8px !important;
+    }
+
+    /* ── Rank text: scale up to ~3/4 proportion ── */
+    .card-action {
+      font-size: clamp(1.3rem, 5vw, 2rem) !important;
+      font-weight: 700 !important;
+      text-align: center !important;
+      line-height: 1.2 !important;
+    }
+    .card-message {
+      font-size: clamp(0.9rem, 3vw, 1.3rem) !important;
+      text-align: center !important;
+      line-height: 1.3 !important;
+    }
+
+    /* ── Corner rank/suit labels: bigger ── */
+    .card-corner .rank {
+      font-size: 1.5rem !important;
+      font-weight: 800 !important;
+      line-height: 1 !important;
+    }
+    .card-corner .suit {
+      font-size: 1.3rem !important;
+      line-height: 1 !important;
+    }
+  `;
+  document.head.appendChild(style);
+})();
+
 // ---------- DOM REFS ----------
 const splash       = document.getElementById('splash');
 const gameScreen   = document.getElementById('game');
@@ -132,9 +220,9 @@ function getArenaSize() {
 }
 function getOrbitRadii() {
   const { w, h } = getArenaSize();
-  // wide horizontal circle — much wider than tall, like a tilted ring
-  const rx = Math.min(w * 0.42, 280);
-  const ry = Math.min(h * 0.13, 95);
+  // Increased orbit radii to accommodate 2x bigger cards (avoid overlap)
+  const rx = Math.min(w * 0.44, 340);
+  const ry = Math.min(h * 0.15, 115);
   return { rx, ry };
 }
 
@@ -186,6 +274,7 @@ function spawnVisibleCards() {
   updateCounter();
 }
 
+// Game screen: 001 image fills card fully (object-fit:cover, no border-radius on img)
 function createCardEl(card) {
   const el = document.createElement('div');
   el.className = 'float-card';
@@ -193,7 +282,8 @@ function createCardEl(card) {
   el.innerHTML = `
     <div class="card-inner">
       <div class="back-art">
-        <img src="${CARD_BACK}" alt="back" draggable="false" />
+        <img src="${CARD_BACK}" alt="back" draggable="false"
+          style="width:100%;height:100%;object-fit:cover;display:block;border-radius:0;" />
       </div>
     </div>
   `;
@@ -292,6 +382,7 @@ function onCardTap(card) {
   visibleCards = visibleCards.filter(c => c.id !== card.id);
 }
 
+// Reveal front: rank image ~3/4 of card, text proportionally large
 function buildRevealFront(card) {
   const data = RANK_DATA[card.rank];
   const colorClass = card.suit.color === 'red' ? 'red' : 'black';
@@ -304,7 +395,11 @@ function buildRevealFront(card) {
       <span class="suit">${card.suit.symbol}</span>
     </div>
     <div class="card-center">
-      <img class="card-character" src="${data.img}" alt="character" draggable="false" />
+      <img class="card-character"
+        src="${data.img}"
+        alt="character"
+        draggable="false"
+        style="width:75%;height:60%;max-width:75%;max-height:60%;object-fit:contain;display:block;border-radius:8px;" />
       <div class="card-action">${data.action}</div>
       ${messageHtml}
     </div>
